@@ -1,3 +1,7 @@
+# Chatbot-buffer.nvim
+
+This is a plugin for interacting with the openai chat api. It's distinctive feature is that the conversation happens in a regular editable buffer so that it plays nicely with other vim plugins and so the user can revise the conversation history before continuing it.
+
 ## Development
 
 ### Run tests
