@@ -6,7 +6,7 @@ This is a plugin for interacting with the openai chat api. It's distinctive feat
 
 ### Run tests
 
-Running tests requires [plenary.nvim][plenary] to be checked out in the parent directory of _this_ repository.
+Running tests requires plenary.nvim to be checked out in the parent directory of _this_ repository.
 You can then run:
 
 ```bash
