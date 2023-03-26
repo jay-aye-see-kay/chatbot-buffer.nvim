@@ -1,5 +1,3 @@
--- vim.opt.rtp:prepend("~/code/neovim-flake/config/")
--- vim.opt.packpath = vim.opt.rtp:get()
 local M = require("chatbot-buffer")
 
 local test_lines = [[
@@ -45,6 +43,10 @@ local expected_api_format = {
 }
 
 describe("converting a buffer's lines to an object we can sent to openai", function()
+  before_each(function()
+    M.setup()
+  end)
+
   it("can break the lines down into sections", function()
     assert.same(expected_sections, M.group_lines_into_sections(M.split_into_lines(test_lines)))
   end)
