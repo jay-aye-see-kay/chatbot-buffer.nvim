@@ -6,7 +6,7 @@ Requires [plenary.nvim](https://github.com/nvim-lua/plenary.nvim), `curl`, and a
 
 ## State of this plugin
 
-This plugin is very work in progress, as in it only just works. Contributions and ideas welcome. Unless you really like exactly what I''m making here I'd recommend one of these two plugins instead:
+This plugin is very work in progress, as in it only just works. There's no docs yet, read the source code (currently <300 lines in one file). Contributions and ideas welcome. Unless you really like exactly what I'm making here I'd recommend one of these two plugins instead:
 
 - https://github.com/jackMort/ChatGPT.nvim
 - https://github.com/dpayne/CodeGPT.nvim
