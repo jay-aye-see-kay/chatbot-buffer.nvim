@@ -27,15 +27,6 @@ M.marker_lines = {
   [M.markers.assistant] = "assistant",
 }
 
-M.config = {
-  chats_dir = "~/notes/ai-chats",
-  initial_text = initial_text,
-  url = "https://api.openai.com/v1/chat/completions",
-  default_settings = {
-    model = "gpt-3.5-turbo",
-  },
-}
-
 -- {{{ helper functions
 M.split_into_lines = function(str)
   local lines = {}
@@ -258,10 +249,31 @@ M.execute_on_current_buffer = function()
   M.send_api(bufnr, key)
 end
 
-M.setup = function()
-  vim.keymap.set("n", "<leader>cc", M.execute_on_current_buffer, { desc = "send buffer to openai" })
-  vim.keymap.set("n", "<leader>cn", M.open_new_chat, { desc = "open new ai-chat buffer" })
-  vim.keymap.set("n", "<leader>cl", M.open_last_chat, { desc = "open last ai-chat buffer" })
+M.default_config = {
+  default_keymaps = true,
+  create_commands = true,
+  chats_dir = "~/notes/ai-chats",
+  initial_text = initial_text,
+  url = "https://api.openai.com/v1/chat/completions",
+  default_settings = {
+    model = "gpt-3.5-turbo",
+  },
+}
+
+M.setup = function(user_config)
+  M.config = vim.tbl_deep_extend("force", M.default_config, user_config or {})
+
+  if M.config.default_keymaps then
+    vim.keymap.set("n", "<leader>cc", M.execute_on_current_buffer, { desc = "send buffer to openai" })
+    vim.keymap.set("n", "<leader>cn", M.open_new_chat, { desc = "open new ai-chat buffer" })
+    vim.keymap.set("n", "<leader>cl", M.open_last_chat, { desc = "open last ai-chat buffer" })
+  end
+
+  if M.config.create_commands then
+    vim.api.nvim_create_user_command("ChatbotExecuteBuffer", M.execute_on_current_buffer, {})
+    vim.api.nvim_create_user_command("ChatbotOpenNew", M.open_new_chat, {})
+    vim.api.nvim_create_user_command("ChatbotOpenLast", M.open_last_chat, {})
+  end
 end
 
 return M
