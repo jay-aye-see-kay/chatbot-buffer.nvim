@@ -310,7 +310,7 @@ M.setup = function(user_config)
     vim.api.nvim_create_user_command("ChatbotExecuteBuffer", M.execute_on_current_buffer, {})
     vim.api.nvim_create_user_command("ChatbotOpenNew", M.open_new_chat, {})
     vim.api.nvim_create_user_command("ChatbotOpenLast", M.open_last_chat, {})
-    vim.api.nvim_create_user_command("ChatsbotOpen", M.select_chat, {})
+    vim.api.nvim_create_user_command("ChatbotOpen", M.select_chat, {})
   end
 end
 
