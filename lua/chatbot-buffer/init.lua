@@ -117,9 +117,10 @@ M.buffer_to_api = function(bufnr)
   return M.sections_to_api_format(sections)
 end
 
-M.send_api = function(bufnr, key)
+M.send_api = function(msg, bufnr)
   M.append_line_to_buffer(bufnr, "")
   M.append_line_to_buffer(bufnr, "Loading...")
+
   require("plenary.job")
     :new({
       command = "curl",
@@ -128,13 +129,13 @@ M.send_api = function(bufnr, key)
         "-H",
         "Content-Type: application/json",
         "-H",
-        "Authorization: Bearer " .. key,
+        "Authorization: Bearer " .. M.api_key,
         "-d",
-        vim.fn.json_encode(M.buffer_to_api(bufnr)),
+        msg,
       },
       on_exit = vim.schedule_wrap(function(response, exit_code)
         if exit_code ~= 0 then
-          print("failed")
+          error("Connection with ChatGPT failed: " .. vim.inspect(response:stderr_result()))
         end
         local result = table.concat(response:result(), "\n")
         local out = vim.fn.json_decode(result)
@@ -164,16 +165,27 @@ M.send_api = function(bufnr, key)
     :start()
 end
 
-M.get_last_chat_filename = function()
+M.get_chats_filenames = function()
   local chat_files = M.read_files_in_dir(M.config.chats_dir)
   local valid_chat_files = {}
+
   for _, chat_file in ipairs(chat_files) do
     local date, num = string.match(chat_file, "(%d%d%d%d%-%d%d%-%d%d)_(%d+)%.ai%-chat.md")
     if date ~= nil and num ~= nil then
-      table.insert(valid_chat_files, chat_file)
+      local filename = vim.fs.normalize(M.config.chats_dir .. "/" .. chat_file)
+      table.insert(valid_chat_files, filename)
     end
   end
-  table.sort(valid_chat_files)
+
+  table.sort(valid_chat_files, function(a, b)
+    return a > b
+  end)
+
+  return valid_chat_files
+end
+
+M.get_last_chat_filename = function()
+  local valid_chat_files = M.get_chats_filenames()
   local last_chat_file = valid_chat_files[#valid_chat_files]
   if last_chat_file == nil then
     print("Not chats found")
@@ -200,7 +212,6 @@ end
 M.open_last_chat = function()
   local filename = M.get_last_chat_filename()
   if filename then
-    filename = vim.fs.normalize(M.config.chats_dir .. "/" .. filename)
     vim.cmd("edit " .. filename)
   end
 end
@@ -208,7 +219,6 @@ end
 M.open_new_chat = function()
   local filename = M.get_new_chat_filename()
   if filename then
-    filename = vim.fs.normalize(M.config.chats_dir .. "/" .. filename)
     vim.cmd("edit " .. filename)
     M.write_initial_text()
   end
@@ -234,11 +244,6 @@ end
 
 -- do some sensible checks before trying to call ai on the buffer
 M.execute_on_current_buffer = function()
-  local key = vim.env.OPENAI_API_KEY
-  if key == nil then
-    print("could not find $OPENAI_API_KEY")
-    return
-  end
   local current_path = vim.fs.normalize(vim.fn.expand("%:p"))
   local config_path = vim.fs.normalize(M.config.chats_dir)
   if not M.is_prefix(current_path, config_path) then
@@ -246,7 +251,31 @@ M.execute_on_current_buffer = function()
     return
   end
   local bufnr = vim.api.nvim_get_current_buf()
-  M.send_api(bufnr, key)
+  local msg = vim.fn.json_encode(M.buffer_to_api(bufnr))
+  M.send_api(msg, bufnr)
+end
+
+-- Use Telescope to select previous chats
+M.select_chat = function(opts)
+  local has_telescope, _ = pcall(require, "telescope")
+  if not has_telescope then
+    error("This function requires nvim-telescope/telescope.nvim")
+  end
+  local telescope_pickers = require("telescope.pickers")
+  local telescope_finders = require("telescope.finders")
+  local telescope_conf = require("telescope.config").values
+
+  opts = opts or {}
+  telescope_pickers
+    .new(opts, {
+      prompt_title = "Chats",
+      finder = telescope_finders.new_table({
+        results = M.get_chats_filenames(),
+      }),
+      sorter = telescope_conf.file_sorter({}),
+      previewer = telescope_conf.file_previewer({}),
+    })
+    :find()
 end
 
 M.default_config = {
@@ -262,17 +291,26 @@ M.default_config = {
 
 M.setup = function(user_config)
   M.config = vim.tbl_deep_extend("force", M.default_config, user_config or {})
+  local key = vim.env.OPENAI_API_KEY
+  if key == nil then
+    error("could not find $OPENAI_API_KEY")
+    return
+  end
+
+  M.api_key = key
 
   if M.config.default_keymaps then
     vim.keymap.set("n", "<leader>cc", M.execute_on_current_buffer, { desc = "send buffer to openai" })
     vim.keymap.set("n", "<leader>cn", M.open_new_chat, { desc = "open new ai-chat buffer" })
     vim.keymap.set("n", "<leader>cl", M.open_last_chat, { desc = "open last ai-chat buffer" })
+    vim.keymap.set("n", "<leader>co", M.select_chat, { desc = "Select previous chats using Telescope" })
   end
 
   if M.config.create_commands then
     vim.api.nvim_create_user_command("ChatbotExecuteBuffer", M.execute_on_current_buffer, {})
     vim.api.nvim_create_user_command("ChatbotOpenNew", M.open_new_chat, {})
     vim.api.nvim_create_user_command("ChatbotOpenLast", M.open_last_chat, {})
+    vim.api.nvim_create_user_command("ChatbotOpen", M.select_chat, {})
   end
 end
 
