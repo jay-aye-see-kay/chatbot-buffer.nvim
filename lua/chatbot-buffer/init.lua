@@ -1,7 +1,3 @@
-local telescope_pickers = require("telescope.pickers")
-local telescope_finders = require("telescope.finders")
-local telescope_conf = require("telescope.config").values
-
 local initial_text = [[
 <!--​ 🔧 settings ​-->
 
@@ -261,6 +257,14 @@ end
 
 -- Use Telescope to select previous chats
 M.select_chat = function(opts)
+  local has_telescope, _ = pcall(require, "telescope")
+  if not has_telescope then
+    error("This function requires nvim-telescope/telescope.nvim")
+  end
+  local telescope_pickers = require("telescope.pickers")
+  local telescope_finders = require("telescope.finders")
+  local telescope_conf = require("telescope.config").values
+
   opts = opts or {}
   telescope_pickers
     .new(opts, {
