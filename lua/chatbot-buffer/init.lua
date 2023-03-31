@@ -1,5 +1,5 @@
-local telescope_pickers = require "telescope.pickers"
-local telescope_finders = require "telescope.finders"
+local telescope_pickers = require("telescope.pickers")
+local telescope_finders = require("telescope.finders")
 local telescope_conf = require("telescope.config").values
 
 local initial_text = [[
@@ -135,7 +135,7 @@ M.send_api = function(msg, bufnr)
         "-H",
         "Authorization: Bearer " .. M.api_key,
         "-d",
-        msg
+        msg,
       },
       on_exit = vim.schedule_wrap(function(response, exit_code)
         if exit_code ~= 0 then
@@ -181,7 +181,9 @@ M.get_chats_filenames = function()
     end
   end
 
-  table.sort(valid_chat_files, function(a, b) return a > b end)
+  table.sort(valid_chat_files, function(a, b)
+    return a > b
+  end)
 
   return valid_chat_files
 end
@@ -260,14 +262,16 @@ end
 -- Use Telescope to select previous chats
 M.select_chat = function(opts)
   opts = opts or {}
-  telescope_pickers.new(opts, {
-    prompt_title = "Chats",
-    finder = telescope_finders.new_table {
-      results = M.get_chats_filenames()
-    },
-    sorter = telescope_conf.file_sorter({}),
-    previewer = telescope_conf.file_previewer({}),
-  }):find()
+  telescope_pickers
+    .new(opts, {
+      prompt_title = "Chats",
+      finder = telescope_finders.new_table({
+        results = M.get_chats_filenames(),
+      }),
+      sorter = telescope_conf.file_sorter({}),
+      previewer = telescope_conf.file_previewer({}),
+    })
+    :find()
 end
 
 M.default_config = {
