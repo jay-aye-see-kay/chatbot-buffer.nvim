@@ -32,4 +32,8 @@ describe("filesystem functions", function()
       tmpdir .. files[3],
     }, M.get_chats_filenames())
   end)
+
+  it("get_last_chat_filename returns most recent chat file", function()
+    assert.same(tmpdir .. files[1], M.get_last_chat_filename())
+  end)
 end)

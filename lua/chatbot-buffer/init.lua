@@ -186,7 +186,7 @@ end
 
 M.get_last_chat_filename = function()
   local valid_chat_files = M.get_chats_filenames()
-  local last_chat_file = valid_chat_files[#valid_chat_files]
+  local last_chat_file = valid_chat_files[1]
   if last_chat_file == nil then
     print("Not chats found")
   end
