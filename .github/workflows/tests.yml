@@ -43,6 +43,6 @@ jobs:
       - uses: JohnnyMorganz/stylua-action@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }} # required for downloading release binaries
-          version: 0.17
+          version: 0.17.0
           args: --check .
 
