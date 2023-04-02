@@ -23,10 +23,7 @@ jobs:
           path: _neovim
           key: ${{ runner.os }}-x64-${{ hashFiles('todays-date') }}
 
-      - name: Prepare plenary
-        run: |
-          git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
-          ln -s "$(pwd)" ~/.local/share/nvim/site/pack/vendor/start
+      - uses: extractions/setup-just@v1
 
       - name: Setup neovim
         uses: rhysd/action-setup-vim@v1
@@ -36,4 +33,5 @@ jobs:
 
       - name: Run tests
         run: |
+          just test
           nvim --headless --noplugin -u tests/minimal.vim -c "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal.vim'}"

@@ -24,16 +24,17 @@ This plugin is very work in progress, as in it only just works. There's no docs 
 
 ### Run tests
 
-**Running tests requires [plenary.nvim](https://github.com/nvim-lua/plenary.nvim) to be checked out in the parent directory of _this_ repository.**
+`tests/init.lua` will download plenary to `.tests/` on first run.
 
-You can then run:
-
-```bash
-nvim --headless --noplugin -u tests/minimal.vim -c "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal.vim'}"
-```
-
-Or if you want to run a single test file:
+Assuming you have `just` installed, run tests with: (if you don't have just installed read the justfile for the command to run)
 
 ```bash
-nvim --headless --noplugin -u tests/minimal.vim -c "PlenaryBustedDirectory tests/path_to_file.lua {minimal_init = 'tests/minimal.vim'}"
+# run all tests
+just test
+
+# run one test
+just test tests/files_spec.lua
+
+# run tests on any lua file change (requires entr to to be installed)
+ls **/*.lua | entr just test
 ```
