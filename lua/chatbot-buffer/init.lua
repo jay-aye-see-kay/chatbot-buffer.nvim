@@ -153,10 +153,20 @@ M.send_api = function(msg, bufnr)
           local tokens_used = out.usage.total_tokens
           local cents_cost = tokens_used * 0.0002
           print("used " .. tokens_used .. " tokens at an estimated cost of " .. cents_cost .. " cents.")
+
+          M.save_buffer(bufnr)
         end
       end),
     })
     :start()
+end
+
+M.save_buffer = function(bufnr)
+  if M.config.auto_save then
+    vim.api.nvim_buf_call(bufnr, function()
+      vim.cmd("write")
+    end)
+  end
 end
 
 M.get_chats_filenames = function()
@@ -218,6 +228,7 @@ M.open_new_chat = function()
     vim.fn.mkdir(dirname, "p")
     vim.cmd("edit " .. filename)
     M.write_initial_text()
+    M.save_buffer(0)
   end
 end
 
@@ -299,6 +310,7 @@ local default_settings = {
 M.default_config = {
   default_keymaps = true,
   create_commands = true,
+  auto_save = true,
   chats_dir = "~/notes/ai-chats",
   initial_chat = {
     settings = default_settings, -- TODO should this default to nothing? it's hard to overide
