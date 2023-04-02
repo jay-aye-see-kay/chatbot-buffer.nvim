@@ -7,7 +7,7 @@ on:
       - main
 
 jobs:
-  build:
+  test:
     name: Run tests
     runs-on: ubuntu-latest
     strategy:
@@ -35,3 +35,15 @@ jobs:
         run: |
           just test
           nvim --headless --noplugin -u tests/minimal.vim -c "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal.vim'}"
+
+  format:
+    name: Check formatting with stylua
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: JohnnyMorganz/stylua-action@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }} # required for downloading release binaries
+          version: 0.17
+          args: --check .
+
