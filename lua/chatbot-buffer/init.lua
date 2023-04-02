@@ -1,16 +1,3 @@
-local initial_text = [[
-<!--​ 🔧 settings ​-->
-
-```json
-{ "model": "gpt-3.5-turbo" }
-```
-
-<!--​ 💻 system ​-->
-
-You're a programming assistant that responds with brief and accurate explanations, preferring code snippets where appropriate
-<!--​ 👤 user ​-->
-]]
-
 local M = {}
 
 M.markers = {
@@ -236,8 +223,28 @@ end
 
 M.write_initial_text = function(bufnr)
   bufnr = bufnr or vim.api.nvim_get_current_buf()
-  local initial_lines = M.split_into_lines(M.config.initial_text)
-  M.append_to_buffer(bufnr, initial_lines)
+
+  if M.config.initial_chat.settings then
+    M.append_to_buffer(bufnr, {
+      M.markers.settings,
+      "",
+      "```json",
+      vim.fn.json_encode(M.config.initial_chat.settings),
+      "```",
+      "",
+    })
+  end
+
+  if M.config.initial_chat.system_text then
+    M.append_to_buffer(bufnr, {
+      M.markers.system,
+      "",
+      M.config.initial_chat.system_text,
+      "",
+    })
+  end
+
+  M.append_to_buffer(bufnr, { "", M.markers.user, "", "" })
 end
 
 M.is_prefix = function(str1, str2)
@@ -286,15 +293,19 @@ M.select_chat = function(opts)
     :find()
 end
 
+local default_settings = {
+  model = "gpt-3.5-turbo",
+}
 M.default_config = {
   default_keymaps = true,
   create_commands = true,
   chats_dir = "~/notes/ai-chats",
-  initial_text = initial_text,
-  url = "https://api.openai.com/v1/chat/completions",
-  default_settings = {
-    model = "gpt-3.5-turbo",
+  initial_chat = {
+    settings = default_settings, -- TODO should this default to nothing? it's hard to overide
+    system_text = "You're a programming assistant that responds with brief and accurate explanations, preferring code snippets where appropriate",
   },
+  url = "https://api.openai.com/v1/chat/completions",
+  default_settings = default_settings,
 }
 
 M.setup = function(user_config)
