@@ -213,7 +213,8 @@ M.get_new_chat_filename = function()
   end
 
   local new_num_str = string.format("%04d", new_num)
-  return todays_date .. "_" .. new_num_str .. ".ai-chat.md"
+  local filename = todays_date .. "_" .. new_num_str .. ".ai-chat.md"
+  return vim.fs.normalize(M.config.chats_dir .. "/" .. filename)
 end
 
 M.open_last_chat = function()
@@ -226,6 +227,8 @@ end
 M.open_new_chat = function()
   local filename = M.get_new_chat_filename()
   if filename then
+    local dirname = vim.fs.dirname(filename)
+    vim.fn.mkdir(dirname, "p")
     vim.cmd("edit " .. filename)
     M.write_initial_text()
   end
