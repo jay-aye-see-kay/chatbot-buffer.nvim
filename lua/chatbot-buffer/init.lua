@@ -35,9 +35,20 @@ M.split_into_lines = function(str)
   end
   return lines
 end
-M.append_line_to_buffer = function(bufnr, line)
+--- Appends an array like table of lines to the end of a buffer *without* a preceeding newline
+--- @param bufnr number
+--- @param lines table<string>
+M.append_to_buffer = function(bufnr, lines)
+  local row = vim.api.nvim_buf_line_count(bufnr) - 1
+  local col = #vim.api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1]
+  vim.api.nvim_buf_set_text(bufnr, row, col, row, col, lines)
+end
+--- Appends an array like table of lines to the end of a buffer *with* a preceeding newline
+--- @param bufnr number
+--- @param lines table<string>
+M.append_line_to_buffer = function(bufnr, lines)
   local line_count = vim.api.nvim_buf_line_count(bufnr)
-  vim.api.nvim_buf_set_lines(bufnr, line_count, line_count, false, { line })
+  vim.api.nvim_buf_set_lines(bufnr, line_count, line_count, false, lines)
 end
 M.delete_last_line_in_buffer = function(bufnr)
   local last_line_num = vim.api.nvim_buf_line_count(bufnr)
@@ -55,6 +66,7 @@ M.read_files_in_dir = function(path)
   end
   return dir_contents
 end
+
 -- }}}
 
 --- break lines from a buffer down into sections
@@ -110,7 +122,7 @@ M.sections_to_api_format = function(sections)
 end
 
 --- read an ai chat buffer into lines and convert it to a conversation we can send to the api
----@param bufnr integer
+---@param bufnr integer|unknown
 M.buffer_to_api = function(bufnr)
   local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
   local sections = M.group_lines_into_sections(lines)
@@ -118,8 +130,7 @@ M.buffer_to_api = function(bufnr)
 end
 
 M.send_api = function(msg, bufnr)
-  M.append_line_to_buffer(bufnr, "")
-  M.append_line_to_buffer(bufnr, "Loading...")
+  M.append_line_to_buffer(bufnr, { "", "Loading..." })
 
   require("plenary.job")
     :new({
@@ -147,14 +158,10 @@ M.send_api = function(msg, bufnr)
           and out.choices[1].message.content ~= nil
         then
           M.delete_last_line_in_buffer(bufnr)
-          M.append_line_to_buffer(bufnr, M.markers.assistant)
-          M.append_line_to_buffer(bufnr, "")
+          M.append_line_to_buffer(bufnr, { M.markers.assistant, "" })
           local out_lines = M.split_into_lines(out.choices[1].message.content)
-          for _, line in ipairs(out_lines) do
-            M.append_line_to_buffer(bufnr, line)
-          end
-          M.append_line_to_buffer(bufnr, "")
-          M.append_line_to_buffer(bufnr, M.markers.user)
+          M.append_line_to_buffer(bufnr, out_lines)
+          M.append_line_to_buffer(bufnr, { "", M.markers.user })
 
           local tokens_used = out.usage.total_tokens
           local cents_cost = tokens_used * 0.0002
@@ -227,9 +234,7 @@ end
 M.write_initial_text = function(bufnr)
   bufnr = bufnr or vim.api.nvim_get_current_buf()
   local initial_lines = M.split_into_lines(M.config.initial_text)
-  for _, line in ipairs(initial_lines) do
-    M.append_line_to_buffer(bufnr, line)
-  end
+  M.append_to_buffer(bufnr, initial_lines)
 end
 
 M.is_prefix = function(str1, str2)
