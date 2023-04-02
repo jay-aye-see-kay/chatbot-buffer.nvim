@@ -34,7 +34,6 @@ jobs:
       - name: Run tests
         run: |
           just test
-          nvim --headless --noplugin -u tests/minimal.vim -c "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal.vim'}"
 
   format:
     name: Check formatting with stylua
