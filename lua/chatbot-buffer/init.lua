@@ -304,6 +304,17 @@ M.select_chat = function(opts)
     :find()
 end
 
+M.live_grep_chats = function()
+  local has_telescope, _ = pcall(require, "telescope")
+  if not has_telescope then
+    error("This function requires nvim-telescope/telescope.nvim")
+  end
+  require("telescope.builtin").live_grep({
+    prompt_title = "Live grep chatbot buffers",
+    cwd = M.config.chats_dir,
+  })
+end
+
 local default_settings = {
   model = "gpt-3.5-turbo",
 }
@@ -335,6 +346,7 @@ M.setup = function(user_config)
     vim.keymap.set("n", "<leader>cn", M.open_new_chat, { desc = "open new ai-chat buffer" })
     vim.keymap.set("n", "<leader>cl", M.open_last_chat, { desc = "open last ai-chat buffer" })
     vim.keymap.set("n", "<leader>co", M.select_chat, { desc = "Select previous chats using Telescope" })
+    vim.keymap.set("n", "<leader>cs", M.live_grep_chats, { desc = "Live grep previous chats using Telescope" })
   end
 
   if M.config.create_commands then
@@ -342,6 +354,7 @@ M.setup = function(user_config)
     vim.api.nvim_create_user_command("ChatbotOpenNew", M.open_new_chat, {})
     vim.api.nvim_create_user_command("ChatbotOpenLast", M.open_last_chat, {})
     vim.api.nvim_create_user_command("ChatbotOpen", M.select_chat, {})
+    vim.api.nvim_create_user_command("ChatbotLiveGrep", M.live_grep_chats, {})
   end
 end
 
