@@ -1,17 +1,17 @@
 local M = require("chatbot-buffer")
 
 local test_lines = [[
-<!--​ 🔧 settings ​-->
+## ​ 🔧 settings
 ```json
 { "model": "gpt-3.5-turbo" }
 ```
-<!--​ 💻 system ​-->
+## ​ 💻 system
 Behave like X
-<!--​ 👤 user ​-->
+## ​ 👤 user
 I want you to do Y
-<!--​ 💁 assistant ​-->
+## ​ 💁 assistant
 Sure done!
-<!--​ 👤 user ​-->
+## ​ 👤 user
 I want you to do Z
 ]]
 
