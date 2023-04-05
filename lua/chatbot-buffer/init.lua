@@ -1,10 +1,10 @@
 local M = {}
 
 M.markers = {
-  settings = "<!--​ 🔧 settings ​-->",
-  system = "<!--​ 💻 system ​-->",
-  user = "<!--​ 👤 user ​-->",
-  assistant = "<!--​ 💁 assistant ​-->",
+  settings = "## ​ 🔧 settings",
+  system = "## ​ 💻 system",
+  user = "## ​ 👤 user",
+  assistant = "## ​ 💁 assistant",
 }
 
 M.marker_lines = {
