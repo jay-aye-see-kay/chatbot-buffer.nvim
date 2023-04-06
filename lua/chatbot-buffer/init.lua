@@ -127,7 +127,7 @@ M.send_api = function(msg, bufnr)
         "-H",
         "Content-Type: application/json",
         "-H",
-        "Authorization: Bearer " .. M.api_key,
+        "Authorization: Bearer " .. M.get_api_key(),
         "-d",
         msg,
       },
@@ -331,15 +331,17 @@ M.default_config = {
   default_settings = default_settings,
 }
 
-M.setup = function(user_config)
-  M.config = vim.tbl_deep_extend("force", M.default_config, user_config or {})
+M.get_api_key = function()
   local key = vim.env.OPENAI_API_KEY
   if key == nil then
     error("could not find $OPENAI_API_KEY")
     return
   end
+  return key
+end
 
-  M.api_key = key
+M.setup = function(user_config)
+  M.config = vim.tbl_deep_extend("force", M.default_config, user_config or {})
 
   if M.config.default_keymaps then
     vim.keymap.set("n", "<leader>cc", M.execute_on_current_buffer, { desc = "send buffer to openai" })
