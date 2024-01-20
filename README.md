@@ -1,3 +1,7 @@
+# Archive notice
+
+I recently learnt about https://github.com/Robitx/gp.nvim and found it's really close to what I was trying to build with a bunch of great features already implemented. I was using this plugin but not adding the features I wanted, archiving so it's clear I won't add any new features.
+
 # Chatbot-buffer.nvim
 
 This is a plugin for interacting with the openai chat api. It's distinctive feature is that the conversation happens in a regular editable buffer so that it plays nicely with other vim plugins and so the user can revise the conversation history before continuing it.
