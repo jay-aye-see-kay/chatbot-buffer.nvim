@@ -116,6 +116,46 @@ M.buffer_to_api = function(bufnr)
   return M.sections_to_api_format(sections)
 end
 
+M.send_api_stream = function()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local api_data = M.buffer_to_api(bufnr)
+  api_data.stream = true
+  local msg = vim.fn.json_encode(api_data)
+
+  local cmd = require("plenary.job"):new({
+    command = "curl",
+    args = {
+      M.config.url,
+      "-H",
+      "Content-Type: application/json",
+      "-H",
+      "Authorization: Bearer " .. M.get_api_key(),
+      "-d",
+      msg,
+    },
+    on_stdout = vim.schedule_wrap(function(_, data)
+      local _, content = pcall(M.get_streaming_content, data)
+      if content ~= nil then
+        vim.api.nvim_input("<esc>GA" .. content .. "<esc>")
+        -- vim.cmd.redraw()
+        -- M.append_to_buffer(bufnr, { content })
+      end
+    end),
+  })
+  cmd:sync()
+end
+
+M.get_streaming_content = function(data)
+  local maybeJson = data:sub(7)
+  print("DEBUGPRINT[13]: init.lua:148: maybeJson=" .. vim.inspect(maybeJson))
+  if maybeJson ~= "[DONE]" and string.len(maybeJson) > 0 then
+    local update = vim.fn.json_decode(maybeJson)
+    if update ~= nil then
+      return update.choices[1]["delta"]["content"]
+    end
+  end
+end
+
 M.send_api = function(msg, bufnr)
   M.append_line_to_buffer(bufnr, { "", "Loading..." })
 
@@ -358,6 +398,12 @@ M.setup = function(user_config)
     vim.api.nvim_create_user_command("ChatbotOpen", M.select_chat, {})
     vim.api.nvim_create_user_command("ChatbotLiveGrep", M.live_grep_chats, {})
   end
+
+  -- TEMP
+  vim.api.nvim_create_user_command("ChatbotNewExec", M.send_api_stream, {})
+  vim.keymap.set("n", "<leader>cc", "<cmd>ChatbotNewExec<cr>", { desc = "streaming exec" })
 end
 
-return M
+M.setup()
+
+-- return M
